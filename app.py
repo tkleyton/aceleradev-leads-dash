@@ -1,7 +1,6 @@
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import pandas as pd
-from sklearn.decomposition import PCA
 
 import dash
 import dash_core_components as dcc
@@ -28,32 +27,17 @@ server = app.server
 app.title = 'Leads recommender dashboard'
 
 # ---------------------------------------------------------------
-
-def merge_portolio_ids_to_base(portfolio_ids, base):
-    return portfolio_ids.merge(base, on='id', how='inner')
-
-# ---------------------------------------------------------------
 # Preparing data for barplots
-ports_ids = [pd.read_csv(f'data/port_ids{i}.csv', index_col='id') for i in range(1, n_of_portfolios + 1)]
-leads_ids = [pd.read_csv(f'data/leads_ids{i}.csv', index_col='id') for i in range(1, n_of_portfolios + 1)]
 
-# Filter the first n leads, n being the size of the portfolio.
-leads_ids = [leads_ids[i].iloc[:ports_ids[i].shape[0]] for i in range(n_of_portfolios)]
-
-df_orig = pd.read_csv('data/estaticos_market.csv', index_col='id')
-ports_dfs = [merge_portolio_ids_to_base(port_ids, df_orig) for port_ids in ports_ids]
-leads_dfs = [merge_portolio_ids_to_base(lead_ids, df_orig) for lead_ids in leads_ids]
+ports_dfs = [pd.read_csv(f'data/ports_dfs{i+1}.csv') for i in range(n_of_portfolios)]
+leads_dfs = [pd.read_csv(f'data/leads_dfs{i+1}.csv') for i in range(n_of_portfolios)]
 
 # ---------------------------------------------------------------
 # Preparing data for scatterplot
-df_clean = pd.read_csv('data/estaticos_market_clean.csv', index_col='id')
-pca = PCA(n_components=2)
-reduced_df = pca.fit_transform(df_clean)
-reduced_df = pd.DataFrame(data=reduced_df, columns=['x', 'y'], index=df_clean.index)
-reduced_df.head()
+reduced_df = pd.read_csv('data/reduced_df.csv')
 
-ports_dfs_clean = [merge_portolio_ids_to_base(port_ids, reduced_df) for port_ids in ports_ids]
-leads_dfs_clean = [merge_portolio_ids_to_base(lead_ids, reduced_df) for lead_ids in leads_ids]
+ports_dfs_clean = [pd.read_csv(f'data/ports_dfs_clean{i+1}.csv') for i in range(n_of_portfolios)]
+leads_dfs_clean = [pd.read_csv(f'data/leads_dfs_clean{i+1}.csv') for i in range(n_of_portfolios)]
 
 # ---------------------------------------------------------------
 
@@ -147,8 +131,6 @@ def make_scatterplot(reduced_df, ports_dfs_clean, leads_dfs_clean):
                      'color': 'DarkSlateGrey'},
             },
         ))
-        
-#    fig.update_layout()
         
     return fig
 
